@@ -23,8 +23,8 @@ vault status
 
 ____________________________________________________________________________________________________________________________________________________
 
-export root_token = ***********************************
-vault login token= $root_token
+
+vault login token=*********************************************************
 
 
 _____________________________________________________________________________________________________________________________________________________
@@ -41,7 +41,8 @@ vault login -method=userpass username=example-user password=password!
 vault secrets list
 
 _________________________________________________________________________________________________________________________________________________________
-web interface 
+                                                                          
+                                               ****************** web interface ***************************************
 
 ________________________________________________________________________________________________________________________________________________________
 
@@ -54,7 +55,7 @@ vault secrets list
 ______________________________________________________________________________________________________________________________________________________
 
 
-export token = ***********************
+export token =***********************
 
 vault token capabilities $token  sys/mounts
 vault token capabilities $token  sys/policies/acl
@@ -74,11 +75,6 @@ vault token capabilities $token  sys/policies/acl
 vault token capabilities $token  sys/policies/acl > token_capabilities.txt
 export PROJECT_ID=$(gcloud config get-value project)
 gsutil cp *.txt gs://$PROJECT_ID
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 vault login $root_token
@@ -175,125 +171,6 @@ vault write auth/userpass/users/security \
                                                                 go to web interface
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-tee admin-policy.hcl <<EOF
-
-
-# Read system health check
-path "sys/health"
-{
-  capabilities = ["read", "sudo"]
-}
-# Create and manage ACL policies broadly across Vault
-# List existing policies
-path "sys/policies/acl"
-{
-  capabilities = ["list"]
-}
-# Create and manage ACL policies
-path "sys/policies/acl/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Enable and manage authentication methods broadly across Vault
-# Manage auth methods broadly across Vault
-path "auth/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Create, update, and delete auth methods
-path "sys/auth/*"
-{
-  capabilities = ["create", "update", "delete", "sudo"]
-}
-# List auth methods
-path "sys/auth"
-{
-  capabilities = ["read"]
-}
-# Enable and manage the key/value secrets engine at `secret/` path
-# List, create, update, and delete key/value secrets
-path "secret/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Manage secrets engines
-path "sys/mounts/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# List existing secrets engines.
-path "sys/mounts"
-{
-  capabilities = ["read"]
-}
-
-EOF
-
-
-
-tee appdev-policy.hcl <<EOF
-
-
-# List existing policies
-path "sys/policies/acl"
-{
-  capabilities = ["list"]
-}
-# Create and manage ACL policies
-path "sys/policies/acl/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Manage secrets engines
-path "sys/mounts/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# List exist
-
-EOF
-
-
-
-tee security-policy.hcl <<EOF
-
-
-# List existing policies
-path "sys/policies/acl"
-{
-  capabilities = ["list"]
-}
-# Create and manage ACL policies
-path "sys/policies/acl/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Manage secrets engines
-path "sys/mounts/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# List existing secrets engines.
-path "sys/mounts"
-{
-  capabilities = ["read"]
-}
-# List, create, update, and delete key/value secrets
-path "secret/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-# Deny access to secret/admin
-path "secret/data/admin/*" {
-    capabilities = ["deny"]
-}
-# Deny list access to secret/admin
-path "secret/metadata/admin/*" {
-    capabilities = ["deny"]
-}
-
-EOF
-
 
 
 vault kv put secret/security/first username=password
@@ -335,19 +212,33 @@ vault kv destroy -versions=1 secret/security/supersecure/bigsecret
 vault kv get secret/appdev/first
 
 vault kv list secret/
+
 vault secrets enable -path=supersecret kv
+
 vault kv get secret/admin/first
+
 vault kv list secret/admin
+
 vault login -method="userpass" username="admin" password="admin123"
+
 vault kv get secret/admin/first
+
 vault kv get secret/security/first
+
 vault kv put secret/webserver/credentials web=awesome
+
 vault kv destroy -versions=1 secret/webserver/credentials
+
 vault kv get secret/appdev/first
+
 vault kv list secret/appdev/
+
 vault policy list
+
 vault policy list > policies-update.txt
+
 gsutil cp policies-update.txt gs://$PROJECT_ID
+
 vault auth enable gcpvault auth list
 
 
